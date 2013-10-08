@@ -16,6 +16,8 @@ function love.load()
 
  enemies = {}
 
+ treasures = {}
+
  clouds = {}
 end
 
@@ -32,6 +34,10 @@ function love.update(dt)
 	if enemy.x > hero.x and enemy.x < hero.x + 100 and hero.jumpingNow == false then
 	  hero.jump()
 	end
+ end
+
+ for i,treasure in ipairs(treasures) do
+    treasure.x = treasure.x + treasure.speed*dt
  end
 
  for i,cloud in ipairs(clouds) do
@@ -58,6 +64,16 @@ function love.update(dt)
 	table.insert(enemies, enemy)
  end
 
+ if math.random() < .001 then
+    treasure = {}
+    treasure.x = 1000
+    treasure.y = 450
+	treasure.width = 20
+	treasure.height = 15
+    treasure.speed = -200
+	table.insert(treasures, treasure)
+ end
+
  if math.random() < .0005 then
    cloud = {}
    cloud.x = 1000
@@ -79,6 +95,12 @@ function love.draw()
  love.graphics.setColor(20, 100, 200, 255)
  for i,cloud in ipairs(clouds) do
     love.graphics.rectangle("fill", cloud.x, cloud.y, cloud.width, cloud.height)
+ end
+
+ --treasures
+ love.graphics.setColor(255, 215, 0, 255)
+ for i,treasure in ipairs(treasures) do
+    love.graphics.rectangle("fill", treasure.x, treasure.y, treasure.width, treasure.height)
  end
 
  -- let's draw our hero

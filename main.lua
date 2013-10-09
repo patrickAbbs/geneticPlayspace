@@ -1,16 +1,10 @@
 
 function love.load()
- hero = initializeHero()
+ currentGeneration = {}
+ currentGeneration.number = 1
+ deathCounter = 0
 
- delayNewObject = false
- delayNewObjectTime = 0
-
-
- enemies = {}
-
- treasures = {}
-
- clouds = {}
+ initializeEverything(currentGeneration.number)
 end
 
 function love.update(dt)
@@ -44,6 +38,10 @@ function love.update(dt)
 end
 
 function love.draw()
+ --let's draw some BACKground.. haha... puns. jk lol
+ love.graphics.setColor(backgroundColor.red, backgroundColor.green, backgroundColor.blue, backgroundColor.otherThing)
+ love.graphics.rectangle("fill", 0, 0, 1000, 1000)
+
  -- let's draw some ground
  love.graphics.setColor(0,255,0,255)
  love.graphics.rectangle("fill", 0,465,800,150)
@@ -71,6 +69,9 @@ function love.draw()
  love.graphics.print(hero.health, 10, 10)
  love.graphics.setColor(0, 255, 255, 255)
  love.graphics.print(hero.points, 10, 25)
+ love.graphics.print(hero.generation, 10, 40)
+ love.graphics.print(deathCounter, 10, 55)
+
  --enemies
  love.graphics.setColor(255,0,0,255)
  for i,enemy in ipairs(enemies) do
@@ -78,12 +79,18 @@ function love.draw()
  end
 
  if hero.health < 0 then
-    --love.graphics.setColor(255, 255, 255, 255)
-	--love.graphics.rectangle("fill", 0, 0, 1000, 1000)
-	initializeHero()
+	deathCounter = deathCounter + 1
+	if deathCounter == 3 then
+	  newGeneration()
+	end
+	initializeEverything(hero.generation)
  end
 end
 
+
+
+
+--side functions
 
 function progressJump()
  hero.jumpSpeed = hero.jumpSpeed - hero.jumpDecay
@@ -163,9 +170,30 @@ function updateClouds(dt)
 end
 
 
+function initializeEverything(generation)
 
-function initializeHero()
+ backgroundColor = {}
+ backgroundColor.red = math.random(255)
+ backgroundColor.green = math.random(255)
+ backgroundColor.blue = math.random(255)
+ backgroundColor.otherThing = math.random(255)
+
+ initializeHero(generation)
+ delayNewObject = false
+ delayNewObjectTime = 0
+
+
+ enemies = {}
+
+ treasures = {}
+
+ clouds = {}
+end
+
+function initializeHero(generation)
  hero = {} -- new table for the hero
+ hero.generation = generation
+
  hero.x = 300    -- x,y coordinates of the hero
  hero.y = 450
  hero.health = 100
@@ -198,5 +226,11 @@ function initializeDNA(hero)
   --table.insert(enemyObject, enemyJump)
   --table.insert(hero.DNA, enemyObject)
   return hero
+end
+
+function newGeneration()
+ currentGeneration.number = 2
+ deathCounter = 0
+ initializeEverything(currentGeneration.number)
 end
 

@@ -1,6 +1,12 @@
 
 function love.load()
+ backgroundColor = {}
+ backgroundColor.red = math.random(255)
+ backgroundColor.green = math.random(255)
+ backgroundColor.blue = math.random(255)
+ backgroundColor.otherThing = math.random(255)
  currentGeneration = {}
+ currentGeneration.heroes = {}
  currentGeneration.number = 1
  deathCounter = 0
 
@@ -66,11 +72,16 @@ function love.draw()
 
 
  love.graphics.rectangle("fill", hero.x,hero.y, 30,15)
- love.graphics.print(hero.health, 10, 10)
+ love.graphics.print("health: ".. hero.health, 10, 10)
  love.graphics.setColor(0, 255, 255, 255)
- love.graphics.print(hero.points, 10, 25)
- love.graphics.print(hero.generation, 10, 40)
- love.graphics.print(deathCounter, 10, 55)
+ love.graphics.print("points: ".. hero.points, 10, 25)
+ love.graphics.print("generation: ".. hero.generation, 10, 40)
+ love.graphics.print("hero number: ".. deathCounter, 10, 55)
+ printY = 70
+ for i,fallenHero in ipairs(currentGeneration.heroes) do
+    love.graphics.print("potential parent "..i.." points ".. fallenHero.points, 10, printY)
+	printY = printY + 15
+ end
 
  --enemies
  love.graphics.setColor(255,0,0,255)
@@ -79,6 +90,8 @@ function love.draw()
  end
 
  if hero.health < 0 then
+	table.insert(currentGeneration.heroes, hero)
+
 	deathCounter = deathCounter + 1
 	if deathCounter == 3 then
 	  newGeneration()
@@ -172,12 +185,6 @@ end
 
 function initializeEverything(generation)
 
- backgroundColor = {}
- backgroundColor.red = math.random(255)
- backgroundColor.green = math.random(255)
- backgroundColor.blue = math.random(255)
- backgroundColor.otherThing = math.random(255)
-
  initializeHero(generation)
  delayNewObject = false
  delayNewObjectTime = 0
@@ -229,7 +236,17 @@ function initializeDNA(hero)
 end
 
 function newGeneration()
- currentGeneration.number = 2
+ backgroundColor = {}
+ backgroundColor.red = math.random(255)
+ backgroundColor.green = math.random(255)
+ backgroundColor.blue = math.random(255)
+ backgroundColor.otherThing = math.random(255)
+
+ lastGenerationNumber = currentGeneration.number
+ currentGeneration = {}
+ currentGeneration.heroes = {}
+ currentGeneration.number = lastGenerationNumber + 1
+
  deathCounter = 0
  initializeEverything(currentGeneration.number)
 end

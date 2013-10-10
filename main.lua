@@ -10,6 +10,7 @@ function love.load()
  currentGeneration.number = 1
  deathCounter = 0
 
+ heroes = {}
  initializeEverything(currentGeneration.number)
 end
 
@@ -205,10 +206,10 @@ end
 
 
 function initializeEverything(generation)
-
  initializeHero(generation)
  delayNewObject = false
  delayNewObjectTime = 0
+
 
 
  enemies = {}
@@ -242,6 +243,8 @@ function initializeHero(generation)
  end
 
  hero = initializeDNA(hero)
+
+ table.insert(heroes, hero)
 
  return hero
 end
@@ -294,12 +297,12 @@ function initializeChildHero(generation)
   hero.DNA.enemyObject = {}
   hero.DNA.enemyObject.jump = {}
   hero.DNA.enemyObject.jump.probability = {bestHero.DNA.enemyObject.jump.probability[1], .05} --first is probability, second is child-inheritance variance
-  hero.DNA.enemyObject.jump.distance = {bestHero.DNA.enemyObject.jump.distance[1] + 20, 5} --first is distance, second is child-inheritance variance
+  hero.DNA.enemyObject.jump.distance = {bestHero.DNA.enemyObject.jump.distance[1], 5} --first is distance, second is child-inheritance variance
 
   hero.DNA.treasureObject = {}
   hero.DNA.treasureObject.jump = {}
   hero.DNA.treasureObject.jump.probability = {bestHero.DNA.treasureObject.jump.probability[1], .05}
-  hero.DNA.treasureObject.jump.distance = {bestHero.DNA.treasureObject.jump.distance[1] + 20, 5}
+  hero.DNA.treasureObject.jump.distance = {bestHero.DNA.treasureObject.jump.distance[1], 5}
 
  function hero.jump()
    hero.y = hero.y - hero.jumpSpeed

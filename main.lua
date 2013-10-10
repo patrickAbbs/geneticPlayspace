@@ -9,6 +9,7 @@ function love.load()
  currentGeneration.heroes = {}
  currentGeneration.number = 1
  deathCounter = 0
+ heroCounter = 1
 
  heroes = {}
  initializeEverything(currentGeneration.number)
@@ -102,7 +103,13 @@ function love.draw()
 	if deathCounter == 3 then
 	  newGeneration()
 	else
-	  initializeEverything(hero.generation)
+	hero = heroes[deathCounter]
+	enemies = {}--so hack
+	clouds = {}--so hack
+	treasures = {}--so hack
+
+	--  initializeEverything(hero.generation)
+	--  heroCounter = heroCounter + 1
 	end
  end
 end
@@ -207,6 +214,8 @@ end
 
 function initializeEverything(generation)
  initializeHero(generation)
+ initializeHero(generation)
+ initializeHero(generation)
  delayNewObject = false
  delayNewObjectTime = 0
 
@@ -246,7 +255,6 @@ function initializeHero(generation)
 
  table.insert(heroes, hero)
 
- return hero
 end
 
 function initializeDNA(hero)
@@ -259,13 +267,16 @@ function initializeDNA(hero)
 
   hero.DNA.treasureObject = {}
   hero.DNA.treasureObject.jump = {}
-  hero.DNA.treasureObject.jump.probability = {math.random(), .05}
+  hero.DNA.treasureObject.jump.probability = {math.random(), .00000000001}
   hero.DNA.treasureObject.jump.distance = {math.random(80) + 20, 5}
 
   return hero
 end
 
 function initializeChildEverything(generation)
+ heroes = {}
+ initializeChildHero(generation)
+ initializeChildHero(generation)
  initializeChildHero(generation)
  delayNewObject = false
  delayNewObjectTime = 0
@@ -279,6 +290,7 @@ end
 
 function initializeChildHero(generation)
   hero = {}
+  hero.generation = generation
 
   hero.x = 300    -- x,y coordinates of the hero
   hero.y = 450
@@ -296,8 +308,18 @@ function initializeChildHero(generation)
 
   hero.DNA.enemyObject = {}
   hero.DNA.enemyObject.jump = {}
-  hero.DNA.enemyObject.jump.probability = {bestHero.DNA.enemyObject.jump.probability[1], .05} --first is probability, second is child-inheritance variance
-  hero.DNA.enemyObject.jump.distance = {bestHero.DNA.enemyObject.jump.distance[1], 5} --first is distance, second is child-inheritance variance
+  negativizeIt = math.random()
+  flipper = 1
+  if negativizeIt < .5 then
+    flipper = -1
+  end
+  hero.DNA.enemyObject.jump.probability = {bestHero.DNA.enemyObject.jump.probability[1] + (math.random() * bestHero.DNA.enemyObject.jump.probability[2] * flipper), .05} --first is probability, second is child-inheritance variance
+
+  flipper = 1.0000000
+  if negativizeIt < .5 then
+    flipper = -1.000000
+  end
+  hero.DNA.enemyObject.jump.distance = {bestHero.DNA.enemyObject.jump.distance[1] + (math.random() * bestHero.DNA.enemyObject.jump.distance[2] * flipper), 5} --first is distance, second is child-inheritance variance
 
   hero.DNA.treasureObject = {}
   hero.DNA.treasureObject.jump = {}
@@ -311,6 +333,7 @@ function initializeChildHero(generation)
  function hero.move()
    hero.y = hero.y - hero.jumpSpeed
  end
+ table.insert(heroes, hero)
 end
 
 function newGeneration()
@@ -320,6 +343,7 @@ function newGeneration()
  --backgroundColor.blue = 0--math.random(255)
  --backgroundColor.otherThing = math.random(255)
  bestScore = 0
+ heroCounter = 0
  for i,hero in ipairs(currentGeneration.heroes) do
    heroScore = hero.points
    if heroScore > bestScore then
@@ -329,13 +353,12 @@ function newGeneration()
  end
 
  lastGenerationNumber = currentGeneration.number
- --currentGeneration = {}
- --currentGeneration.heroes = {}
- --currentGeneration.number = lastGenerationNumber + 1
+ currentGeneration = {}
+ currentGeneration.heroes = {}
+ currentGeneration.number = lastGenerationNumber + 1
 
  deathCounter = 0
- initializeChildEverything(lastGenerationNumber + 1)
- currentGeneration = {}
+ initializeChildEverything(currentGeneration.number)
  currentGeneration.heroes = {}
 end
 

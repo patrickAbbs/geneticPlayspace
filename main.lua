@@ -25,11 +25,11 @@ function love.update(dt)
 
  updateClouds(dt)
 
- if math.random() < .001 and delayNewObject == false then
+ if math.random() < .001 then
   createEnemy()
  end
 
- if math.random() < .001 and delayNewObject == false then
+ if math.random() < .001 then
   createTreasure()
  end
 
@@ -77,7 +77,12 @@ function love.draw()
  love.graphics.print("points: ".. hero.points, 10, 25)
  love.graphics.print("generation: ".. hero.generation, 10, 40)
  love.graphics.print("hero number: ".. deathCounter, 10, 55)
- printY = 70
+ love.graphics.print("enemy jump chance: ".. hero.DNA.enemyObject.jump.probability[1], 10, 70)
+ love.graphics.print("enemy jump distance: ".. hero.DNA.enemyObject.jump.distance[1], 10, 85)
+ love.graphics.print("treasure jump chance: ".. hero.DNA.treasureObject.jump.probability[1], 10, 100)
+ love.graphics.print("treasure jump distance: ".. hero.DNA.treasureObject.jump.distance[1], 10, 115)
+ love.graphics.print("death counter: ".. deathCounter, 10, 130)
+ printY = 145
  for i,fallenHero in ipairs(currentGeneration.heroes) do
     love.graphics.print("potential parent "..i.." points ".. fallenHero.points, 10, printY)
 	printY = printY + 15
@@ -95,8 +100,9 @@ function love.draw()
 	deathCounter = deathCounter + 1
 	if deathCounter == 3 then
 	  newGeneration()
+	else
+	  initializeEverything(hero.generation)
 	end
-	initializeEverything(hero.generation)
  end
 end
 
@@ -124,6 +130,7 @@ function createEnemy()
  enemy.width = 30
  enemy.height = 15
  enemy.speed = -200
+ enemy.perceived = false
  table.insert(enemies, enemy)
 end
 
@@ -134,12 +141,13 @@ function createTreasure()
  treasure.width = 20
  treasure.height = 15
  treasure.speed = -200
+ treasure.perceived = false
 table.insert(treasures, treasure)
 end
 
 function createCloud()
  cloud = {}
- cloud.x = 1000
+ cloud.x = 800
  cloud.y = math.random(350)
  cloud.width = math.random(55) + 35
  cloud.height = math.random(45) + 15
@@ -150,10 +158,23 @@ end
 
 function updateHero()
  for i,enemy in ipairs(enemies) do
-	if enemy.x > hero.x and enemy.x < hero.x + hero.DNA.enemyObject.enemyJump[2] and hero.jumpingNow == false then
-	  hero.jump()
+	if enemy.x > hero.x and enemy.x < hero.x + hero.DNA.enemyObject.jump.distance[1] and enemy.perceived == false and hero.jumpingNow == false then
+	  enemy.perceived = true
+	  if math.random() < hero.DNA.enemyObject.jump.probability[1] then
+	    hero.jump()
+	  end
 	end
  end
+
+ for i,treasure in ipairs(treasures) do
+	if treasure.x > hero.x and treasure.x < hero.x + hero.DNA.treasureObject.jump.distance[1] and treasure.perceived == false and hero.jumpingNow == false then
+	  treasure.perceived = true
+	  if math.random() < hero.DNA.treasureObject.jump.probability[1] then
+	    hero.jump()
+	  end
+	end
+ end
+
 end
 
 function updateEnemies(dt)
@@ -227,27 +248,91 @@ end
 
 function initializeDNA(hero)
   hero.DNA = {}
+
   hero.DNA.enemyObject = {}
-  hero.DNA.enemyObject.enemyJump = {math.random(), math.random(100)}
-  --enemyJump = {math.random(), math.random(100)}
-  --table.insert(enemyObject, enemyJump)
-  --table.insert(hero.DNA, enemyObject)
+  hero.DNA.enemyObject.jump = {}
+  hero.DNA.enemyObject.jump.probability = {math.random(), .05} --first is probability, second is child-inheritance variance
+  hero.DNA.enemyObject.jump.distance = {math.random(80) + 20, 5} --first is distance, second is child-inheritance variance
+
+  hero.DNA.treasureObject = {}
+  hero.DNA.treasureObject.jump = {}
+  hero.DNA.treasureObject.jump.probability = {math.random(), .05}
+  hero.DNA.treasureObject.jump.distance = {math.random(80) + 20, 5}
+
   return hero
 end
 
+function initializeChildEverything(generation)
+ initializeChildHero(generation)
+ delayNewObject = false
+ delayNewObjectTime = 0
+
+ enemies = {}
+
+ treasures = {}
+
+ clouds = {}
+end
+
+function initializeChildHero(generation)
+  hero = {}
+
+  hero.x = 300    -- x,y coordinates of the hero
+  hero.y = 450
+  hero.health = 100
+  hero.points = 0
+  herocolor = "blue"
+  hero.jumpSpeed = .6
+  hero.initialJumpSpeed = .6
+  hero.jumpDecay = .005
+  hero.jumpNow = 0
+  hero.jumpingNow = false
+
+  hero.generation = generation
+  hero.DNA = {}
+
+  hero.DNA.enemyObject = {}
+  hero.DNA.enemyObject.jump = {}
+  hero.DNA.enemyObject.jump.probability = {bestHero.DNA.enemyObject.jump.probability[1], .05} --first is probability, second is child-inheritance variance
+  hero.DNA.enemyObject.jump.distance = {bestHero.DNA.enemyObject.jump.distance[1] + 20, 5} --first is distance, second is child-inheritance variance
+
+  hero.DNA.treasureObject = {}
+  hero.DNA.treasureObject.jump = {}
+  hero.DNA.treasureObject.jump.probability = {bestHero.DNA.treasureObject.jump.probability[1], .05}
+  hero.DNA.treasureObject.jump.distance = {bestHero.DNA.treasureObject.jump.distance[1] + 20, 5}
+
+ function hero.jump()
+   hero.y = hero.y - hero.jumpSpeed
+   hero.jumpingNow = true
+ end
+ function hero.move()
+   hero.y = hero.y - hero.jumpSpeed
+ end
+end
+
 function newGeneration()
- backgroundColor = {}
- backgroundColor.red = math.random(255)
- backgroundColor.green = math.random(255)
- backgroundColor.blue = math.random(255)
- backgroundColor.otherThing = math.random(255)
+ --backgroundColor = {}
+ --backgroundColor.red = 255--math.random(255)
+ --backgroundColor.green = 0--math.random(255)
+ --backgroundColor.blue = 0--math.random(255)
+ --backgroundColor.otherThing = math.random(255)
+ bestScore = 0
+ for i,hero in ipairs(currentGeneration.heroes) do
+   heroScore = hero.points
+   if heroScore > bestScore then
+     bestHero = hero
+	 bestScore = heroScore
+   end
+ end
 
  lastGenerationNumber = currentGeneration.number
- currentGeneration = {}
- currentGeneration.heroes = {}
- currentGeneration.number = lastGenerationNumber + 1
+ --currentGeneration = {}
+ --currentGeneration.heroes = {}
+ --currentGeneration.number = lastGenerationNumber + 1
 
  deathCounter = 0
- initializeEverything(currentGeneration.number)
+ initializeChildEverything(lastGenerationNumber + 1)
+ currentGeneration = {}
+ currentGeneration.heroes = {}
 end
 

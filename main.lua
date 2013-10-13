@@ -9,6 +9,7 @@ function love.load()
  backgroundColor.blue = math.random(255)
  backgroundColor.otherThing = math.random(255)
  currentGeneration = {}
+ pastGenerations = {}
  currentGeneration.heroes = {}
  currentGeneration.number = 1
  deathCounter = 0
@@ -28,7 +29,7 @@ function love.update(dt)
 	table.insert(currentGeneration.heroes, hero)
 
 	deathCounter = deathCounter + 1
-	if deathCounter == 3 then
+	if deathCounter == 10 then
 	  newGeneration()
 	else
 	hero = heroes[deathCounter]
@@ -44,6 +45,13 @@ end
 
 
 function initializeEverything(generation)
+ initializeHero(generation)
+ initializeHero(generation)
+ initializeHero(generation)
+ initializeHero(generation)
+ initializeHero(generation)
+ initializeHero(generation)
+ initializeHero(generation)
  initializeHero(generation)
  initializeHero(generation)
  initializeHero(generation)
@@ -63,7 +71,7 @@ function initializeHero(generation)
 
  hero.x = 300    -- x,y coordinates of the hero
  hero.y = 450
- hero.health = 1
+ hero.health = 400
  hero.points = 0
  herocolor = "blue"
  hero.jumpSpeed = .6
@@ -107,6 +115,14 @@ function initializeChildEverything(generation)
  initializeChildHero(generation)
  initializeChildHero(generation)
  initializeChildHero(generation)
+ initializeChildHero(generation)
+ initializeChildHero(generation)
+ initializeChildHero(generation)
+ initializeChildHero(generation)
+ initializeChildHero(generation)
+ initializeChildHero(generation)
+ initializeChildHero(generation)
+
  delayNewObject = false
  delayNewObjectTime = 0
 
@@ -123,7 +139,7 @@ function initializeChildHero(generation)
 
   hero.x = 300    -- x,y coordinates of the hero
   hero.y = 450
-  hero.health = 100
+  hero.health = 400
   hero.points = 0
   herocolor = "blue"
   hero.jumpSpeed = .6
@@ -149,13 +165,28 @@ end
 function newGeneration()
  bestScore = 0
  heroCounter = 0
+ pastGenerations[currentGeneration.number] = {}
+ pastGenerations[currentGeneration.number].generationNumber = currentGeneration.number
+ currentGenerationScore = 0
+ currentGenerationCount = 0
+ currentGenerationEnemyJumpChance = 0 --hack.  should probably be general 'get-all-the-object-type' sort of thing.  whatevs will figure out later
+ currentGenerationEnemyJumpCount = 0 --hack.  see above
  for i,hero in ipairs(currentGeneration.heroes) do
    heroScore = hero.points
+
+   currentGenerationScore = currentGenerationScore + hero.points
+   currentGenerationCount = currentGenerationCount + 1
+
+   currentGenerationEnemyJumpChance = currentGenerationEnemyJumpChance + hero.DNA.enemyObject.jump.probability[1]
+   currentGenerationEnemyJumpCount = currentGenerationEnemyJumpCount + 1
+
    if heroScore > bestScore then
      bestHero = hero
 	 bestScore = heroScore
    end
  end
+ pastGenerations[currentGeneration.number].averageScore = currentGenerationScore / currentGenerationCount
+ pastGenerations[currentGeneration.number].enemyJumpChanceAverage = currentGenerationEnemyJumpChance / currentGenerationEnemyJumpCount
 
  lastGenerationNumber = currentGeneration.number
  currentGeneration = {}
@@ -169,57 +200,26 @@ end
 
 
 function mutateDNA(baseDNA, newDNA)
-
-  negativizeIt = math.random()
-  flipper = 1.0000000
-  if negativizeIt < .5 then
-    flipper = -1.000000
+  newDNA = {}
+  love.graphics.setColor(0, 255, 255, 255)
+  for i, objectType in pairs(baseDNA) do
+    newDNA[i] = {}
+    for j, action in pairs(objectType) do
+	  newDNA[i][j] = {}
+	  for k, actionProbability in pairs(action) do
+	    flipper = 1
+	  negativizeIt = math.random()
+	  if negativizeIt < .5 then
+	    flipper = -1
+	  end
+	  newDNA[i][j][k] = {}
+	  mutationMutation = math.random()
+	  mutationAmount = actionProbability[2] * mutationMutation * flipper
+	  newDNA[i][j][k][1] = actionProbability[1] + mutationAmount
+	  newDNA[i][j][k][2] = actionProbability[2] * mutationMutation
+	  end
+	end
   end
-  newDNA.enemyObject = {}
-  newDNA.enemyObject.jump = {}
-  newDNA.enemyObject.jump.probability = {baseDNA.enemyObject.jump.probability[1] + (math.random() * baseDNA.enemyObject.jump.probability[2] * flipper), .05} --first is probability, second is child-inheritance variance
-
-  negativizeIt = math.random()
-  flipper = 1.0000000
-  if negativizeIt < .5 then
-    flipper = -1.000000
-  end
-  newDNA.enemyObject.jump.distance = {baseDNA.enemyObject.jump.distance[1] + (math.random() * baseDNA.enemyObject.jump.distance[2] * flipper), 5} --first is distance, second is child-inheritance variance
-
-  newDNA.treasureObject = {}
-  newDNA.treasureObject.jump = {}
-  newDNA.treasureObject.jump.probability = {baseDNA.treasureObject.jump.probability[1], .05}
-  newDNA.treasureObject.jump.distance = {baseDNA.treasureObject.jump.distance[1], 5}
-  --newDNA = {}
-  --love.graphics.setColor(0, 255, 255, 255)
-  --for i, objectType in pairs(baseDNA) do
-    --i = {}
-  --  newDNA.i = {}
-	--love.graphics.print(i, 100, 100)
-	--debug.debug()
-    --love.timer.sleep(10)
- --   for j, action in pairs(objectType) do
---	  newDNA.i.j = {}
-	  --for k, actionProbability in ipairs(action) do
-	  --  flipper = 1
-	  --negativizeIt = math.random()
-	  --if negativizeIt < .5 then
-	  --  flipper = -1
-	  --end
-	  --newDNA.i.j.k = actionProbability
-	  --end
-      --love.graphics.print(action.probability, 100, 25)
-	  --love.timer.sleep(10)
---	  newDNA.i.j.probability = action.probability
---	end
-  --end
-
-
-  --love.graphics.print(newDNA.i.j.probability[1], 100, 25)
-  --love.graphics.print(newDNA.enemyObject.jump.probability[1], 100, 25)
-  --love.timer.sleep(10)
-
-
   return newDNA
 end
 

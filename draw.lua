@@ -59,6 +59,6 @@ function printInfo()
  printY = 10
  for i, pastGeneration in ipairs(pastGenerations) do
    love.graphics.print("generation number: "..pastGeneration.generationNumber.. ", score: "..pastGeneration.averageScore..", enemy jump chance: "..pastGeneration.enemyJumpChanceAverage, 300, printY)
-   printY = printY + 15
+   printY = printY + 30
  end
 end

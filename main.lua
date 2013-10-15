@@ -149,8 +149,8 @@ function initializeChildHero(generation)
   hero.jumpingNow = false
 
   hero.generation = generation
-  hero.DNA = {}
-  hero.DNA = mutateDNA(bestHero.DNA, hero.DNA)
+
+  hero.DNA = mutateDNA(bestHero.DNA)
 
  function hero.jump()
    hero.y = hero.y - hero.jumpSpeed
@@ -199,24 +199,23 @@ function newGeneration()
 end
 
 
-function mutateDNA(baseDNA, newDNA)
+function mutateDNA(baseDNA)
   newDNA = {}
-  love.graphics.setColor(0, 255, 255, 255)
   for i, objectType in pairs(baseDNA) do
     newDNA[i] = {}
     for j, action in pairs(objectType) do
 	  newDNA[i][j] = {}
 	  for k, actionProbability in pairs(action) do
 	    flipper = 1
-	  negativizeIt = math.random()
-	  if negativizeIt < .5 then
-	    flipper = -1
-	  end
-	  newDNA[i][j][k] = {}
-	  mutationMutation = math.random()
-	  mutationAmount = actionProbability[2] * mutationMutation * flipper
-	  newDNA[i][j][k][1] = actionProbability[1] + mutationAmount
-	  newDNA[i][j][k][2] = actionProbability[2] * mutationMutation
+	    negativizeIt = math.random()
+	    if negativizeIt < .5 then
+	      flipper = -1
+	    end
+	    newDNA[i][j][k] = {}
+	    mutationMutation = math.random()
+	    mutationAmount = actionProbability[2] * mutationMutation * flipper
+	    newDNA[i][j][k][1] = actionProbability[1] + mutationAmount
+	    newDNA[i][j][k][2] = actionProbability[2] * (mutationMutation + .5)
 	  end
 	end
   end
